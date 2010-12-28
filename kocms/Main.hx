@@ -20,7 +20,7 @@ This is the
 >>third<< paragraph.
 
     This is some
-    code that I
+    "code" that <I>
     wrote once
 
 !billede \"test.png\"
