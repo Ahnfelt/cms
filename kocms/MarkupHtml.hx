@@ -42,7 +42,7 @@ class MarkupHtml {
             case Listing(listing):
                 writeListing(listing, output, command);
             case Command(name, arguments):
-                output(command(name, arguments));
+                if(command != null) output(command(name, arguments));
         }
     }
     
