@@ -71,19 +71,20 @@
                     $('#cms-move-box').css('top', (event.pageY - 20) + 'px')
                 }            
                 function makeTarget(movedElement, element, after) {
+                    // TODO: Make target box sizes styleable
                     var target = $('<div class="cms-move-target"></div>')
                     var marginWidth = (element.outerWidth(true) - element.outerWidth())
                     var marginHeight = (element.outerHeight(true) - element.outerHeight())
                     var left = element.offset().left - marginWidth / 2
                     var top = element.offset().top - marginHeight
-                    target.css('left', (left + 0 * 15) + 'px')
+                    target.css('left', (left + 15) + 'px')
                     if(after) {
-                        target.css('top', (top + element.outerHeight(true) - 0 * 15) + 'px')
+                        target.css('top', (top + element.outerHeight(true) - 15) + 'px')
                     } else {
-                        target.css('top', (top - 0 * 15) + 'px')
+                        target.css('top', (top - 15) + 'px')
                     }
-                    target.css('width', (element.outerWidth(true) - 0 * 30) + 'px')
-                    target.css('height', '0 * 30px')
+                    target.css('width', (element.outerWidth(true) - 30) + 'px')
+                    target.css('height', '30px')
                     target.mouseover(function(event) {
                         target.addClass('cms-move-target-hover')
                         $('#cms-move-box').hide()
