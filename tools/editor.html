@@ -1,0 +1,170 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Example editor with markup</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script src="kocms.js"></script>
+        <script>
+            // Fixes a bug(?) in Haxe EReg for JavaScript
+            EReg.prototype.oldMatch = EReg.prototype.match;
+            EReg.prototype.match = function(s) {
+                this.r.lastIndex = 0;
+                return this.oldMatch(s);
+            }
+        </script>
+        <script>
+            $(function() {
+                var markupElement = $("#markup");
+                var resultElement = $("#result");
+                var oldInput = null;
+                function update() {
+                    var input = markupElement.val();
+                    if(input != oldInput) {
+                        var markup = new kocms.MarkupParser().parse(input);
+                        var html = kocms.MarkupHtml.toHtml(markup);
+                        resultElement.html(html);
+                        oldInput = input;
+                    }
+                    setTimeout(update, 100);
+                }
+                update();
+            })
+        </script>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            #markup {
+                width: 48%;
+                height: 60%;
+                position: absolute;
+                left: 5px;
+                top: 5px;
+            }
+            #help {
+                position: absolute;
+                left: 5px;
+                top: 60%;
+                width: 45%;
+            }
+            #result {
+                width: 48%;
+                height: 100%;
+                position: absolute;
+                right: 0;
+                top: 0;
+                background-color: white;
+                z-index: -1;
+                overflow: auto;
+                padding: 0 0.5em;
+            }
+            #result td {
+                padding: 2px 6px;
+                background-color: #D0D0FF;
+                border: 1px solid gray;
+            }
+            #result thead td {
+                background-color: #BABAFF;
+                font-weight: bold;
+            }
+            #result table {
+                border-collapse: collapse;
+                empty-cells: show;
+                margin: 1em 25px;
+            }
+            #result h1 {
+                background-color: #EAEAFF;
+                border: 1px solid #BABAFF;
+                border-bottom: 2px solid #BABAFF;
+                padding-left: 5px;
+                font-size: 1.6em;
+            }
+            #result h2 {
+                background-color: #EAEAFF;
+                border: 1px solid #BABAFF;
+                border-bottom: 2px solid #BABAFF;
+                padding-left: 5px;
+                font-size: 1.4em;
+            }
+            #result ul, #result ol {
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            #result p {
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+            #result pre {
+                margin: 1em 25px;
+                background-color: #EAEAFF;
+                border: 1px solid gray;
+                padding: 3px 6px;
+                overflow: auto;
+            }
+        </style>
+    </head>
+    <body>
+<textarea id="markup" autofocus>
+Formateringshjælp
+=================
+
+Se kildekoden af denne side for at se hvordan teksten er gjort kursiv osv. Der er tale om en variant af [Markdown](http://daringfireball.net/projects/markdown/).
+
+Teksten er delt op i paragraffer, og der skal være mindst en tom linje mellem hver paragraf.
+
+Du kan skrive med *kursiv* eller **fed** tekst. Du kan også skrive `skrivemaskineskrift`.
+
+Du kan lave lister
+
+1. Ved at skrive `-` foran hvert punkt.
+2. Eller at skrive et tal som for eksempel `1.` foran hver punkt.
+  - Tal giver numererede lister, mens streger giver punktlister.
+  - Du kan lave underlister som denne ved at sætte
+    nogle mellemrum foran hvert underpunkt.
+
+Du kan lave tabeller (anden linje angiver om kolonnen skal venstrestilles, højrestilles eller centreres altefter hvor du sætter `:`)
+
+| Vare    | Stykpris |
+| ------- | :------: |
+| Bananer |  kr. 1   |
+| Æbler   |  kr. 2   |
+| Pærer   |  kr. 3   |
+
+Hvis du vil undgå at et tegn betyder noget specielt kan du sætte en `\\` foran.
+
+    Du kan skrive et længere stykke tekst uformateret 
+    ved at sætte 4 mellemrum foran hver linje.
+
+Du kan lave overskrifter og underoverskrifter ved at lave en linje af henholdsvis `===` eller `---` under en paragraf, for eksempel:
+
+
+Kommandoer
+----------
+
+Der er en del ekstra funktionalitet som kan tilgås via kommandoer. Den mest almindelige kommando indsætter et billede:
+
+!image "lolcat.png"
+
+Kommandoer starter med et `!` og et navn, og resten af paragraffen er parametre til kommandoen. For billeder er det nok at angive et URL, men man kan også indstille bredde, højde og alternativ tekst som følger:
+
+!image {
+    "url": "lolcat.png",
+    "width": "150px",
+    "height": "100px",
+    "alt": "A funny cat."
+}
+</textarea>
+        <p id="help">
+            Du kan redigere teksten i feltet herover og se det endelige resultat til højre med det samme.
+            Dine ændringer på denne hjælpeside bliver ikke gemt.
+        </p>
+        <div id="result">
+            <p>Genererer forhåndsvisningen...</p>
+            <p>Hvis JavaScript er slået fra kan forhåndsvisningen ikke ses,
+            men du kan stadig gemme dine ændringer.</p>
+        </div>
+    </body>
+</html>
+

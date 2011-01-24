@@ -1,17 +1,12 @@
 package kocms;
 
 import kocms.Markup;
+import kocms.Html;
 
 class MarkupHtml {
-    private static function htmlEscape(string: String): String {
-        // Note that StringTools.htmlEscape is broken (doesn't escape " and '), hence the following fix
-        return StringTools.replace(StringTools.replace(StringTools.htmlEscape(string), "\"", "&#34;"), "'", "&#39;");
-    }
-
     public static function toHtml(markup: Array<Markup>, ?command: String -> String -> String): String {
         var builder = new StringBuf();
-        var output = function(string) { builder.add(string); };
-        writeHtml(markup, output, command);
+        writeHtml(markup, builder.add, command);
         return builder.toString();
     }
 
@@ -37,10 +32,50 @@ class MarkupHtml {
                 output("</h2>\n");
             case Code(code):
                 output("<pre>\n");
-                output(htmlEscape(code));
+                output(Html.escape(code));
                 output("</pre>\n");
             case Listing(listing):
                 writeListing(listing, output, command);
+            case Table(headings, alignment, rows):
+                var align = function(i: Int) {
+                    if(i < alignment.length) {
+                        var aligned = alignment[i];
+                        return if(aligned.left && aligned.right) " align=\"center\""
+                            else if(aligned.left) " align=\"left\""
+                            else if(aligned.right) " align=\"right\""
+                            else "";
+                    } else {
+                        return "";
+                    }
+                }
+                output("<table>\n");
+                if(headings.length > 0) {
+                    output("<thead>\n");
+                    output("<tr>\n");
+                    var i = 0;
+                    for(cell in headings) {
+                        output("<td" + align(i) + ">\n");
+                        writeInline(cell, output, command);
+                        output("</td>\n");
+                        i += 1;
+                    }
+                    output("</tr>\n");
+                    output("</thead>\n");
+                }
+                output("<tbody>\n");
+                for(row in rows) {
+                    output("<tr>\n");
+                    var j = 0;
+                    for(cell in row) {
+                        output("<td" + align(j) + ">\n");
+                        writeInline(cell, output, command);
+                        output("</td>\n");
+                        j += 1;
+                    }
+                    output("</tr>\n");
+                }
+                output("</tbody>\n");
+                output("</table>\n");
             case Command(name, arguments):
                 if(command != null) output(command(name, arguments));
         }
@@ -89,14 +124,14 @@ class MarkupHtml {
                 output("</em>");
             case Verbatim(verbatim):
                 output("<code>");
-                output(htmlEscape(verbatim));
+                output(Html.escape(verbatim));
                 output("</code>");
             case Link(inside, url):
-                output("<a href=\"" + htmlEscape(url) + "\">");
+                output("<a href=\"" + Html.escape(url) + "\">");
                 writeInline(inside, output, command);
                 output("</a>");
             case Text(text):
-                output(htmlEscape(text));
+                output(Html.escape(text));
             case Sequence(left, right):
                 writeInline(left, output, command);
                 writeInline(right, output, command);

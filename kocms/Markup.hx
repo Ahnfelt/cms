@@ -6,6 +6,7 @@ enum Markup {
     Subheading(inside: Inline);
     Code(code: String);
     Listing(listing: Listing);
+    Table(headings: Array<Inline>, alignment: Array<{left: Bool, right: Bool}>, rows: Array<Array<Inline>>);
     Command(name: String, arguments: String);
 }
 

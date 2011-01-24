@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Drag'n'drop</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <style>
+            #left {
+                position: absolute;
+                top: 50px;
+                left: 50px;
+                width: 200px;
+            }
+            #center {
+                position: absolute;
+                top: 50px;
+                left: 300px;
+                right: 50px;
+            }
+            .cms-element {
+                margin: 5px;
+                padding: 20px 5px;
+                border: 5px solid #A0A0A0;
+                background: #F0F0F0;
+                border-radius: 10px;
+            }
+            #left .cms-element {
+                border: 1px solid #000000;
+                border-radius: 5px;
+            }
+            #cms-move-layer {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+            }
+            .cms-move-element {
+                position: absolute;
+                display: block;
+                cursor: move;
+            }
+            #cms-move-box {
+                position: absolute;
+                border: 1px dashed blue;
+                background: rgba(0, 0, 255, 0.4);
+                width: 100px;
+                height: 40px;
+                border-radius: 5px;
+            }
+            .cms-move-target {
+                position: absolute;
+                display: block;
+                border: 1px dashed rgb(0, 0, 255);
+                background: rgba(0, 0, 255, 0.1);
+                border-radius: 5px;
+                min-width: 50px;
+                min-height: 30px;
+            }
+            .cms-move-target-hover {
+                background: rgba(0, 0, 255, 0.5);
+            }
+            .cms-move-selected {
+                opacity: 0.3;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+        <script>
+            $(function() {
+                function positionMoveBox(event) {
+                    $('#cms-move-box').css('left', (event.pageX - 50) + 'px')
+                    $('#cms-move-box').css('top', (event.pageY - 20) + 'px')
+                }            
+                function makeTarget(movedElement, element, after) {
+                    var target = $('<div class="cms-move-target"></div>')
+                    var marginWidth = (element.outerWidth(true) - element.outerWidth())
+                    var marginHeight = (element.outerHeight(true) - element.outerHeight())
+                    var left = element.offset().left - marginWidth / 2
+                    var top = element.offset().top - marginHeight
+                    target.css('left', (left + 0 * 15) + 'px')
+                    if(after) {
+                        target.css('top', (top + element.outerHeight(true) - 0 * 15) + 'px')
+                    } else {
+                        target.css('top', (top - 0 * 15) + 'px')
+                    }
+                    target.css('width', (element.outerWidth(true) - 0 * 30) + 'px')
+                    target.css('height', '0 * 30px')
+                    target.mouseover(function(event) {
+                        target.addClass('cms-move-target-hover')
+                        $('#cms-move-box').hide()
+                    })
+                    target.mouseout(function(event) {
+                        target.removeClass('cms-move-target-hover')
+                        $('#cms-move-box').show()
+                    })
+                    target.mouseup(function(event) {
+                        var actualElement = movedElement.data('cms-element')
+                        if(after) {
+                            element.after(actualElement)
+                        } else {
+                            element.prepend(actualElement)
+                        }
+                    })
+                    $('#cms-move-layer').append(target)
+                }
+                function startMove(movedElement) {
+                    var moveBox = $('<div id="cms-move-box"></div>');
+                    $('#cms-move-layer').append(moveBox)
+                    $('#cms-move-layer').css('cursor', 'move')
+                    $('.cms-hole').each(function(index, element) {
+                        element = $(element)
+                        var first = element.children(':first')
+                        if(!first.hasClass('cms-move-selected')) {
+                            makeTarget(movedElement, element, false)
+                        }
+                        element.find('.cms-element:not(.cms-move-selected)').each(function(index, element) {
+                            element = $(element)
+                            if(!element.next().hasClass('cms-move-selected')) {
+                                makeTarget(movedElement, element, true)
+                            }
+                        })
+                    })
+                    $('#cms-move-layer').mouseup(function(event) {
+                        movedElement.data('cms-element').removeClass('cms-move-selected')
+                        $('#cms-move-layer').remove()
+                        startMoveSelect() // TODO: remove
+                    })
+                }
+                //startMove()
+                function startMoveSelect() {
+                    var moveLayer = $('<div id="cms-move-layer"></div>');
+                    $('body').append(moveLayer)
+                    $('.cms-element').each(function(index, element) {
+                        element = $(element)
+                        var target = $('<div class="cms-move-element"></div>')
+                        target.css('top', element.offset().top + 'px')
+                        target.css('left', element.offset().left + 'px')
+                        target.css('width', element.outerWidth() + 'px')
+                        target.css('height', element.outerHeight() + 'px')
+                        target.data('cms-element', element)
+                        target.mousedown(function(event) {
+                            event.stopPropagation()
+                            event.preventDefault()
+                            $('#cms-move-layer').mousemove(positionMoveBox)
+                            $('#cms-move-layer').mousedown(function(event) {
+                                event.preventDefault()
+                            })
+                            target.data('cms-element').addClass('cms-move-selected')
+                            startMove(target)
+                            positionMoveBox(event)
+                        })
+                        $('#cms-move-layer').append(target)
+                    })
+                    moveLayer.mousedown(function(event) {
+                        if(event.isPropagationStopped()) return
+                        // moveLayer.remove() // TODO: uncomment
+                    })
+                }
+                startMoveSelect()
+            })
+        </script>
+    </head>
+    <body>
+        <div id="left" class="cms-hole">
+            <div class="cms-element" style="background-color: rgba(255, 0, 0, 0.2);">Ocelot</div>
+            <div class="cms-element" style="background-color: rgba(0, 255, 0, 0.2);">Jaguar</div>
+            <div class="cms-element" style="background-color: rgba(0, 0, 255, 0.2);">Leopard</div>
+            <div class="cms-element" style="background-color: rgba(100, 100, 255, 0.2);">Cheetah</div>
+        </div>
+        <div id="center" class="cms-hole">
+            <div class="cms-element" style="background-color: rgba(255, 0, 255, 0.2);">Cougar</div>
+            <div class="cms-element" style="background-color: rgba(255, 255, 0, 0.2);">Tiger</div>
+            <div class="cms-element" style="background-color: rgba(0, 255, 255, 0.2);">Lion</div>
+        </div>
+    </body>
+</html>
+
